@@ -4,6 +4,13 @@ package com.example.tutorialspringboot.controller;
 
 import com.example.tutorialspringboot.model.Tutorial;
 import com.example.tutorialspringboot.repository.TutorialRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name="Tutorial Controller", description = "Tutorial Gerenciador de APIs") // Tag swagger que altera o nome do grupo de endpoints tutorial-controller padrao para um nome personalizado
 @CrossOrigin(origins = "http://localhost:8081")
 // estou no mesmo domínio da solicitação cliente e do servidor, não preciso configurar o cors
 @RestController // essa anotação diz para o spring gerenciar essa classe como um controller
@@ -25,8 +33,18 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
     @Autowired
     TutorialRepository tutorialRepository;
 
+    // Outra opcao para trabalhar com os parametros do swagger
+//    @Parameters({
+//            @Parameter(name = "title", description = "Search Tutorials by title"),
+//            @Parameter(name = "page", description = "Page number, starting from 0", required = true),
+//            @Parameter(name = "size", description = "Number of items per page", required = true)
+//    })
     @GetMapping("/tutorials")
-    public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {  // requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
+    public ResponseEntity<List<Tutorial>> getAllTutorials( // @RequestParam(requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
+                                                           @Parameter(description = "Busque Tutorials por título.") @RequestParam(required = false) String title,
+                                                           @Parameter(description = "Número da página, começando por 0.", required = true) @RequestParam(defaultValue = "0") int page,
+                                                           @Parameter(description = "Número de itens por página.", required = true) @RequestParam(defaultValue = "3") int size
+    ) {
         try {
             List<Tutorial> tutorials = new ArrayList<>();
 
@@ -45,8 +63,18 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
         }
     }
 
+
+    // Tag do Swagger que informa qual operacao esse endpoint faz na API
+    @Operation(
+            summary = "Buscar um Tutorial pelo Id", // O que faz: Da uma ideia geral do que o metodo faz. No caso, ele busca um tutorial usando seu Id (Identificador).
+            description = "Obtenha um objeto Tutorial especificando seu id. A resposta é um objeto Tutorial com id, título, descrição e status publicado.", // O que faz: Explica com mais detalhes o que a funcao faz, o que voce precisa para usa-la (um Id) e o que voce vai receber de volta (um objeto Tutorial).
+            tags = {"tutorial", "get"}) // O que faz: As "etiquetas" sao usadas para organizar os endpoints na documentacao. Todos os metodos relacionados a "tutoriais" e que usam o metodo "GET" podem ser agrupados sob essas etiquetas. Isso ajuda a encontrar mais facilmente o que voce está procurando na documentacao.
+    @ApiResponses({ // Define varias respostas esperadas da api com seu 1 status e 2 body
+            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }), // Informa que pode esperar que se a API encontrar por meio do id o objeto procurado ela irá retornar o status 200 e um objeto Tutorial na estrutura json
+            @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
     @GetMapping("/tutorials/{id}")
-    public ResponseEntity<Tutorial> getById(@PathVariable("id") long id) {
+    public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") long id) {
         try {
             Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
 
@@ -60,6 +88,7 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
         }
     }
 
+    @Tag(name = "tutorials", description = "Tutorial APIs")
     @PostMapping("/tutorials")
     public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {  // spring irá desserializar o corpo JSON(requisição http post enviada pelo cliente) e criar um objeto java Tutorial
         try {

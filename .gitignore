@@ -24,4 +24,5 @@ mvnw
 mvnw.cmd
 *.pem
 *.jks
+.vscode
 

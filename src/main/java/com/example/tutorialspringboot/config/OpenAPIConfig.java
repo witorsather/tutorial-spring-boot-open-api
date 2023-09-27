@@ -1,10 +1,11 @@
-package config;
+package com.example.tutorialspringboot.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,18 +13,21 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 
+// Inicializacao Spring Boot
+// 1 Quando a aplicacao Spring Boot inicia, ela procura todas as classes marcadas com @Configuration.
+// 2 Para cada classe de configuracao, ele olha os metodos marcados com @Bean.
+// O Spring chama esses metodos @Bean e guarda o resultado para uso futuro.
 
-@Configuration
-// @Configuration: Essa anotacao diz ao Spring que a classe contem configuracoes. Mas a classe em si nao faz nada ate que voce diga ao Spring quais objetos ele precisa criar e gerenciar. E aí que entra @Bean.
-public class OpenApiConfig {
+@Configuration // @Configuration: Essa anotacao diz ao Spring que a classe contem configuracoes. Mas a classe em si nao faz nada ate que voce diga ao Spring quais objetos ele precisa criar e gerenciar. E aí que entra @Bean.
+public class OpenAPIConfig {
 
     // A anotacao @Value pega o valor associado a chave openapi-dev-url do arquivo src>resources>application.properties e coloca na variavel devUrl. Isso evita que você tenha que escrever
     // o valor "localhost:8080" diretamente no codigo, conhecido como "hardcoding". Centralizar as informacoes em um arquivo de configuracao torna mais facil fazer mudancas futuras.
     // Essa abordagem é mais flexivel porque, se você decidir mudar a URL, basta atualizar o arquivo application.properties sem ter que mexer no codigo e recompilar o projeto.
-    @Value("${openapi-dev-url}")
+    @Value("${openapi.dev-url}")
     private String devUrl;
 
-    @Value("${openapi-prod-url}")
+    @Value("${openapi.prod-url}")
     private String prodUrl;
 
     @Bean  // @Bean: Essa anotacao e usada nos metodos para dizer ao Spring: "Ei, execute esse metodo e guarde o resultado porque vou precisar dele mais tarde".
@@ -54,13 +58,12 @@ public class OpenApiConfig {
         return new OpenAPI().info(info).servers(List.of(devServer, prodServer)); // List.of cria uma lista imutavel
     }
 
+    @PostConstruct
+    public void init() {
+        System.out.println("config iniciada");
+    }
+
 }
-
-// Inicializacao Spring Boot
-// 1 Quando a aplicacao Spring Boot inicia, ela procura todas as classes marcadas com @Configuration.
-// 2 Para cada classe de configuracao, ele olha os metodos marcados com @Bean.
-// O Spring chama esses metodos @Bean e guarda o resultado para uso futuro.
-
 // @Configuration: Spring Boot vê essa anotação e sabe que esta classe tem configurações importantes.
 // @Value: Pega as URLs (endereços na internet) do arquivo application.properties e coloca nas variáveis devUrl e prodUrl.
 // @Bean: Diz ao Spring Boot para prestar atenção nesse método, porque ele vai criar um objeto que será usado mais tarde.

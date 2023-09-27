@@ -2,23 +2,29 @@
 
 package com.example.tutorialspringboot.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Tutorial")  // table name e column name são definidos para uma maior clareza e controle, apesar do hibernate automaticamente usar o nome da entidade java para o nome da tabela do banco p
+@Schema(description = "Informação do Modelo de Tutorial")
 public class Tutorial {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)   // o java confia que o postgresql irá olhar a sequência e gerar automáticamente o próximo valor disponível para o id
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Id(identificador) do Tutorial", example = "4")
     private long id;
 
     @Column(name = "title")
+    @Schema(description = "Título do Tutorial", example = "Banco de Dados")
     private String title;
 
     @Column(name = "description")
+    @Schema(description = "Descrição do Tutorial", example = "Postgresql")
     private String description;
 
     @Column(name = "published")
+    @Schema(description = "Status do Tutorial (publicado ou não)", example = "true")
     private boolean published;
 
     public Tutorial() { // construtor sem argumentos que me permite na hora de instanciar a classe, new Tutorial() não precisar passar argumentos, posso passar depois com sets setTitle
