@@ -33,13 +33,21 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
     @Autowired
     TutorialRepository tutorialRepository;
 
+    @GetMapping("/tutorials")
     // Outra opcao para trabalhar com os parametros do swagger
 //    @Parameters({
 //            @Parameter(name = "title", description = "Search Tutorials by title"),
 //            @Parameter(name = "page", description = "Page number, starting from 0", required = true),
 //            @Parameter(name = "size", description = "Number of items per page", required = true)
 //    })
-    @GetMapping("/tutorials")
+    @Operation(
+            summary = "Buscar lista de Tutoriais",
+            description = "Obtenha uma lista de Tutoriais por título ou sem título. A resposta é um uma lista de Tutoriais com id, título, descrição e status publicado.",
+            tags = {"tutorial", "get"})
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
+            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
     public ResponseEntity<List<Tutorial>> getAllTutorials( // @RequestParam(requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
                                                            @Parameter(description = "Busque Tutorials por título.") @RequestParam(required = false) String title,
                                                            @Parameter(description = "Número da página, começando por 0.", required = true) @RequestParam(defaultValue = "0") int page,
@@ -63,7 +71,30 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
         }
     }
 
+    @GetMapping("/tutorials/published")
+    @Operation(
+            summary = "Buscar lista de Tutoriais",
+            description = "Obtenha uma lista de Tutoriais por status de publicação = true. A resposta é um uma lista de Tutoriais com id, título, descrição e status publicado.",
+            tags = {"tutorial", "get"})
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
+            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+    public ResponseEntity<List<Tutorial>> findByPublished() {  // o cliente irá receber uma resposta http json com uma lista de tutorials ou apenas o status sem conteúdo.
+        try {
+            List<Tutorial> tutorials = tutorialRepository.findByPublished(true);
 
+            if (tutorials.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(tutorials, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @GetMapping("/tutorials/{id}")
     // Tag do Swagger que informa qual operacao esse endpoint faz na API
     @Operation(
             summary = "Buscar um Tutorial pelo Id", // O que faz: Da uma ideia geral do que o metodo faz. No caso, ele busca um tutorial usando seu Id (Identificador).
@@ -73,7 +104,6 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }), // Informa que pode esperar que se a API encontrar por meio do id o objeto procurado ela irá retornar o status 200 e um objeto Tutorial na estrutura json
             @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
             @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
-    @GetMapping("/tutorials/{id}")
     public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") long id) {
         try {
             Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
@@ -88,8 +118,14 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
         }
     }
 
-    @Tag(name = "tutorials", description = "Tutorial APIs")
     @PostMapping("/tutorials")
+    @Operation(
+            summary = "Criar um Tutorial",
+            description = "Crie um objeto Tutorial especificando seu título e descrição",
+            tags = {"tutorial", "post"})
+    @ApiResponses({ 
+            @ApiResponse(responseCode = "201", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
     public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {  // spring irá desserializar o corpo JSON(requisição http post enviada pelo cliente) e criar um objeto java Tutorial
         try {
             Tutorial _tutorial = tutorialRepository
@@ -101,6 +137,14 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
     }
 
     @PutMapping("/tutorials/{id}")
+    @Operation(
+            summary = "Atualizar um Tutorial",
+            description = "Atualize um objeto Tutorial especificando seu novo título, descrição e status de publicação",
+            tags = {"tutorial", "put"})
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
+            @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
     public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") long id, @RequestBody Tutorial tutorial) {
         try {
             Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
@@ -119,22 +163,13 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
         }
     }
 
-    @DeleteMapping("/tutorials/{id}")
-    public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) { // esse método poderia usar apenas 1 consulta no banco, apenas o deleteById, o que seria melhor pra performance, mas visando um feedback mais claro, achei melhor colocar 2 consultas permitindo retornar ao cliente um resposta de não encontrado quando não houver id no banco em vez de um erro NO_CONTENT que pode ser enganoso.
-        try {
-            Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
-
-            if (tutorialData.isPresent()) {
-                tutorialRepository.deleteById(id);
-                return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-            } else {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+    @Operation(
+            summary = "Excluir todos os Tutoriais",
+            description = "Excluir toda a lista de Tutoriais.",
+            tags = {"tutorial", "delete"})
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
     @DeleteMapping("/tutorials")
     public ResponseEntity<Tutorial> deleteAllTutorials() {
         try {
@@ -145,16 +180,25 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
         }
     }
 
-    @GetMapping("/tutorials/published")
-    public ResponseEntity<List<Tutorial>> findByPublished() {  // o cliente irá receber uma resposta http json com uma lista de tutorials ou apenas o status sem conteúdo.
+    @Operation(
+            summary = "Excluir um Tutorial pelo Id",
+            description = "Exclua um objeto Tutorial especificando seu id.",
+            tags = {"tutorial", "delete"})
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
+            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+    @DeleteMapping("/tutorials/{id}")
+    public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) {
         try {
-            List<Tutorial> tutorials = tutorialRepository.findByPublished(true);
+            Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
 
-            if (tutorials.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            if (tutorialData.isPresent()) {
+                tutorialRepository.deleteById(id);
+                return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+            } else {
+                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
             }
-
-            return new ResponseEntity<>(tutorials, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
