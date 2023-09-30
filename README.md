@@ -2,7 +2,7 @@
 
 Este projeto consiste em uma API em Spring Boot que realiza operações CRUD (Create, Read, Update, Delete) de tutoriais. Ele fornece endpoints para gerenciar tutoriais, incluindo criação, atualização, exclusão e consulta.
 
-# Endpoints da API
+## Endpoints da API
 
 A API oferece os seguintes endpoints para gerenciar tutoriais:
 
@@ -23,9 +23,9 @@ ou
 http://localhost:8080/witorsather-documentation
 ```
 
-### Imagens da documentação da API com Swagger OpenAPI
+### Swagger OpenAPI
 
-#### Inicialização (Init)
+#### Inicialização Swagger (Init)
 ![Inicialização](utilidades/swagger-images/swagger-init.png)
 
 #### Solicitação de Tutoriais por ID (Get ID Request)
@@ -34,13 +34,24 @@ http://localhost:8080/witorsather-documentation
 #### Resposta da Solicitação de Tutoriais por ID (Get Response)
 ![Resposta de Obtenção](utilidades/swagger-images/swagger-get-response.png)
 
-### Diagrama ControllerAdvise e Exception no Java
+## ControllerAdvise e Exception Java
 
 #### Uso no projeto do ControllerAdvise para capturar as Excessões do TutorialController
 ![ControllerAdvise](utilidades/diagrama-images/diagrama-exception-java-controller-advise.png)
 
 #### Explicação das Excessões em Java (1 Checada 2 Não Checada)
 ![Exception-Java](utilidades/diagrama-images/diagrama-java-exception-object-exception.png)
+
+#### Insomnia Excessão
+![Insomnia-Exception-Java](utilidades/insomnia-images/insomnia-getbyid-exception-controlleradvise.png)
+
+## Paginação Spring (Page e Pageable)
+
+#### Uso no projeto do Page e Pageable para fazer paginação dos dados
+![ControllerAdvise](utilidades/diagrama-images/controller-pageable-repository-page.png)
+
+#### Insomnia getAllTutorials com parâmetro título e paginação
+![Paginacao](utilidades/insomnia-images/insomnia-page-pageable-paginacao.png)
 
 ## Requisitos
 

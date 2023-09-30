@@ -13,13 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Tag(name = "Tutorial Controller", description = "Tutorial Gerenciador de APIs")
 // Tag swagger que altera o nome do grupo de endpoints tutorial-controller padrao para um nome personalizado
@@ -50,24 +51,40 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}),
             @ApiResponse(responseCode = "204", content = {@Content(schema = @Schema())}),
             @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
-    public ResponseEntity<List<Tutorial>> getAllTutorials( // @RequestParam(requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
+    public ResponseEntity<Map<String, Object>> getAllTutorials( // @RequestParam(requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
                                                            @Parameter(description = "Busque Tutorials por título.") @RequestParam(required = false) String title,
                                                            @Parameter(description = "Número da página, começando por 0.", required = true) @RequestParam(defaultValue = "0") int page,
                                                            @Parameter(description = "Número de itens por página.", required = true) @RequestParam(defaultValue = "3") int size
     ) {
         try {
             List<Tutorial> tutorials = new ArrayList<>();
+            Pageable paging = PageRequest.of(page, size); // Criamos um objeto Pageable para dizer ao Spring como queremos que a paginacao seja feita. Criamos Pageable objetos usando a classe PageRequest que implementa a interface Pageable
 
+            Page<Tutorial> pageTutorials; // Objeto Page
             if (title == null) {
-                tutorialRepository.findAll().forEach(tutorials::add);
+                // Quando chamamos "findAll", o Spring nos da um objeto Page.
+                // Esse objeto Page tem 3 coisas:
+                // 1. A lista de Tutoriais na pagina atual.
+                // 2. O numero total de Tutoriais em todas as paginas.
+                // 3. O numero total de paginas.
+                pageTutorials = tutorialRepository.findAll(paging);
             } else
-                tutorialRepository.findByTitleIgnoreCase(title).forEach(tutorials::add);
+                // Mesma coisa que acima, mas aqui estamos buscando Tutoriais com um titulo especifico.
+                pageTutorials = tutorialRepository.findByTitleIgnoreCase(title, paging);
 
-            if (tutorials.isEmpty()) {
+            if (pageTutorials.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
-            return new ResponseEntity<>(tutorials, HttpStatus.OK);
+            tutorials = pageTutorials.getContent(); // Aqui pegamos a lista de Tutoriais que estao na pagina atual (Objeto Page).
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("tutorials", tutorials);
+            response.put("currentPage", pageTutorials.getNumber());
+            response.put("totalItems", pageTutorials.getTotalElements());
+            response.put("totalPages", pageTutorials.getTotalPages());
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -82,15 +99,28 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}),
             @ApiResponse(responseCode = "204", content = {@Content(schema = @Schema())}),
             @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
-    public ResponseEntity<List<Tutorial>> findByPublished() {  // o cliente irá receber uma resposta http json com uma lista de tutorials ou apenas o status sem conteúdo.
+    public ResponseEntity<Map<String, Object>> findByPublished(
+            @RequestParam(defaultValue = "0") int page, // o requered (obrigatorio) por padrao e false, nao e obrigatorio passar mas se passar vai ser usado
+            @RequestParam(defaultValue = "3") int size
+    ) {  // o cliente irá receber uma resposta http json com uma lista de tutorials ou apenas o status sem conteúdo.
         try {
-            List<Tutorial> tutorials = tutorialRepository.findByPublished(true);
+            List<Tutorial> tutorials = new ArrayList<>();
+            Pageable paging = PageRequest.of(page, size); // se passar so 1 argumento, so size ira dar erro de compilacao porque o metodo espera 2 argumentos
+
+            Page<Tutorial> pageTutorials = tutorialRepository.findByPublished(true, paging);
+            tutorials = pageTutorials.getContent();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("tutorials", tutorials); // para recuperar a lista de itens na pagina.
+            response.put("currentPage", pageTutorials.getNumber()); // para a pagina atual.
+            response.put("totaItems", pageTutorials.getTotalElements()); // para o total de itens armazenados no banco de dados.
+            response.put("totaPages", pageTutorials.getTotalPages()); // para o numero total de paginas.
 
             if (tutorials.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
 
-            return new ResponseEntity<>(tutorials, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
