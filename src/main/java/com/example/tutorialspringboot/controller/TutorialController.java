@@ -2,6 +2,7 @@
 
 package com.example.tutorialspringboot.controller;
 
+import com.example.tutorialspringboot.exception.ResourceNotFoundException;
 import com.example.tutorialspringboot.model.Tutorial;
 import com.example.tutorialspringboot.repository.TutorialRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Tag(name="Tutorial Controller", description = "Tutorial Gerenciador de APIs") // Tag swagger que altera o nome do grupo de endpoints tutorial-controller padrao para um nome personalizado
+@Tag(name = "Tutorial Controller", description = "Tutorial Gerenciador de APIs")
+// Tag swagger que altera o nome do grupo de endpoints tutorial-controller padrao para um nome personalizado
 @CrossOrigin(origins = "http://localhost:8081")
 // estou no mesmo domínio da solicitação cliente e do servidor, não preciso configurar o cors
 @RestController // essa anotação diz para o spring gerenciar essa classe como um controller
@@ -45,9 +47,9 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             description = "Obtenha uma lista de Tutoriais por título ou sem título. A resposta é um uma lista de Tutoriais com id, título, descrição e status publicado.",
             tags = {"tutorial", "get"})
     @ApiResponses({
-            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
-            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+            @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}),
+            @ApiResponse(responseCode = "204", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     public ResponseEntity<List<Tutorial>> getAllTutorials( // @RequestParam(requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
                                                            @Parameter(description = "Busque Tutorials por título.") @RequestParam(required = false) String title,
                                                            @Parameter(description = "Número da página, começando por 0.", required = true) @RequestParam(defaultValue = "0") int page,
@@ -77,9 +79,9 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             description = "Obtenha uma lista de Tutoriais por status de publicação = true. A resposta é um uma lista de Tutoriais com id, título, descrição e status publicado.",
             tags = {"tutorial", "get"})
     @ApiResponses({
-            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
-            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+            @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}),
+            @ApiResponse(responseCode = "204", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     public ResponseEntity<List<Tutorial>> findByPublished() {  // o cliente irá receber uma resposta http json com uma lista de tutorials ou apenas o status sem conteúdo.
         try {
             List<Tutorial> tutorials = tutorialRepository.findByPublished(true);
@@ -93,39 +95,44 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     @GetMapping("/tutorials/{id}")
     // Tag do Swagger que informa qual operacao esse endpoint faz na API
     @Operation(
             summary = "Buscar um Tutorial pelo Id", // O que faz: Da uma ideia geral do que o metodo faz. No caso, ele busca um tutorial usando seu Id (Identificador).
             description = "Obtenha um objeto Tutorial especificando seu id. A resposta é um objeto Tutorial com id, título, descrição e status publicado.", // O que faz: Explica com mais detalhes o que a funcao faz, o que voce precisa para usa-la (um Id) e o que voce vai receber de volta (um objeto Tutorial).
-            tags = {"tutorial", "get"}) // O que faz: As "etiquetas" sao usadas para organizar os endpoints na documentacao. Todos os metodos relacionados a "tutoriais" e que usam o metodo "GET" podem ser agrupados sob essas etiquetas. Isso ajuda a encontrar mais facilmente o que voce está procurando na documentacao.
+            tags = {"tutorial", "get"})
+    // O que faz: As "etiquetas" sao usadas para organizar os endpoints na documentacao. Todos os metodos relacionados a "tutoriais" e que usam o metodo "GET" podem ser agrupados sob essas etiquetas. Isso ajuda a encontrar mais facilmente o que voce está procurando na documentacao.
     @ApiResponses({ // Define varias respostas esperadas da api com seu 1 status e 2 body
-            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }), // Informa que pode esperar que se a API encontrar por meio do id o objeto procurado ela irá retornar o status 200 e um objeto Tutorial na estrutura json
-            @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+            @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}), // Informa que pode esperar que se a API encontrar por meio do id o objeto procurado ela irá retornar o status 200 e um objeto Tutorial na estrutura json
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     public ResponseEntity<Tutorial> getTutorialById(@PathVariable("id") long id) {
-        try {
-            Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
+        Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
 
-            if (tutorialData.isPresent()) {
-                return new ResponseEntity<>(tutorialData.get(), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (tutorialData.isPresent()) {
+            return new ResponseEntity<>(tutorialData.get(), HttpStatus.OK);
+        } else {
+            throw new ResourceNotFoundException(String.format("Não foi encontrado um Tutorial com o id = %d", id));
         }
+        //} catch (Exception e) {
+        //        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        //  }
+        // cade o try catch? nao precisa porque meu ControllerAdvise captura excessoes do tipo 1 ResourceNotFoundException e a 2 generica Exception (com a resposta 'Erro no servidor'), ou seja
+        // a nao ser que eu espere outro tipo de excessao alem dessas 2 nao preciso usar try catch
+        // se eu usar try catch o catch (pegue) ira pegar a excessao que eu crie no try throw new Resource e tratar ela em vez de deixar o ControllerAdvise fazer seu trabalho de super heroi (faz rondas entre os controllers buscando excessoes (crimes))
     }
+
+
 
     @PostMapping("/tutorials")
     @Operation(
             summary = "Criar um Tutorial",
             description = "Crie um objeto Tutorial especificando seu título e descrição",
             tags = {"tutorial", "post"})
-    @ApiResponses({ 
-            @ApiResponse(responseCode = "201", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {  // spring irá desserializar o corpo JSON(requisição http post enviada pelo cliente) e criar um objeto java Tutorial
         try {
             Tutorial _tutorial = tutorialRepository
@@ -142,11 +149,10 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             description = "Atualize um objeto Tutorial especificando seu novo título, descrição e status de publicação",
             tags = {"tutorial", "put"})
     @ApiResponses({
-            @ApiResponse(responseCode = "200", content = { @Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON") }),
-            @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+            @ApiResponse(responseCode = "200", content = {@Content(schema = @Schema(implementation = Tutorial.class), mediaType = "application/JSON")}),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     public ResponseEntity<Tutorial> updateTutorial(@PathVariable("id") long id, @RequestBody Tutorial tutorial) {
-        try {
             Optional<Tutorial> tutorialData = tutorialRepository.findById(id);
 
             if (tutorialData.isPresent()) {
@@ -156,11 +162,8 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
                 _tutorial.setPublished(tutorial.isPublished());
                 return new ResponseEntity<>(tutorialRepository.save(_tutorial), HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+                throw new ResourceNotFoundException(String.format("Não foi encontrado um Tutorial com o id = %d", id));
             }
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @Operation(
@@ -168,8 +171,8 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             description = "Excluir toda a lista de Tutoriais.",
             tags = {"tutorial", "delete"})
     @ApiResponses({
-            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+            @ApiResponse(responseCode = "204", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     @DeleteMapping("/tutorials")
     public ResponseEntity<Tutorial> deleteAllTutorials() {
         try {
@@ -185,9 +188,9 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             description = "Exclua um objeto Tutorial especificando seu id.",
             tags = {"tutorial", "delete"})
     @ApiResponses({
-            @ApiResponse(responseCode = "204", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "404", content = { @Content(schema = @Schema()) }),
-            @ApiResponse(responseCode = "500", content = { @Content(schema = @Schema()) }) })
+            @ApiResponse(responseCode = "204", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "404", content = {@Content(schema = @Schema())}),
+            @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     @DeleteMapping("/tutorials/{id}")
     public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) {
         try {

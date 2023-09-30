@@ -23,7 +23,7 @@ ou
 http://localhost:8080/witorsather-documentation
 ```
 
-### Imagens de exemplo da documentação da API
+### Imagens da documentação da API com Swagger OpenAPI
 
 #### Inicialização (Init)
 ![Inicialização](utilidades/swagger-images/swagger-init.png)
@@ -34,6 +34,13 @@ http://localhost:8080/witorsather-documentation
 #### Resposta da Solicitação de Tutoriais por ID (Get Response)
 ![Resposta de Obtenção](utilidades/swagger-images/swagger-get-response.png)
 
+### Diagrama ControllerAdvise e Exception no Java
+
+#### Uso no projeto do ControllerAdvise para capturar as Excessões do TutorialController
+![ControllerAdvise](utilidades/diagrama-images/diagrama-exception-java-controller-advise.png)
+
+#### Explicação das Excessões em Java (1 Checada 2 Não Checada)
+![Exception-Java](utilidades/diagrama-images/diagrama-java-exception-object-exception.png)
 
 ## Requisitos
 
