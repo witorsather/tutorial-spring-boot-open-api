@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,18 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
     @Autowired
     TutorialRepository tutorialRepository;
 
+    // Parametro - String direcao recebida no requestparam (no parametro da requisicao) pode ser 1 'asc' ou 'desc'
+    // Retorno - Um enum que para o valor do parametro 'asc' e Sort.Direction.ASC e para o valor do parametro 'desc' e Sort.Direction.DESC
+    private Sort.Direction getSortDirection(String direction) {
+        if (direction.equals("asc")) {
+            return Sort.Direction.ASC;
+        } else if (direction.equals("desc")) {
+            return Sort.Direction.DESC;
+        }
+
+        return Sort.Direction.ASC;
+    }
+
     @GetMapping("/tutorials")
     // Outra opcao para trabalhar com os parametros do swagger
 //    @Parameters({
@@ -53,12 +67,32 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
             @ApiResponse(responseCode = "500", content = {@Content(schema = @Schema())})})
     public ResponseEntity<Map<String, Object>> getAllTutorials( // @RequestParam(requered = false indico que o parâmetro não é obrigatório. Se fornecido, retornaremos uma resposta filtrada; caso contrário, retornaremos todos os tutoriais sem filtro.
                                                            @Parameter(description = "Busque Tutorials por título.") @RequestParam(required = false) String title,
-                                                           @Parameter(description = "Número da página, começando por 0.", required = true) @RequestParam(defaultValue = "0") int page,
-                                                           @Parameter(description = "Número de itens por página.", required = true) @RequestParam(defaultValue = "3") int size
+                                                           @Parameter(description = "Número da página, começando por 0.") @RequestParam(defaultValue = "0") int page,
+                                                           @Parameter(description = "Número de itens por página.") @RequestParam(defaultValue = "3") int size,
+                                                                @Parameter(description = "Classificação da página por coluna e ordem.") @RequestParam(defaultValue = "id,desc") String[] sort // classificação dos itens por coluna e ordem
     ) {
         try {
+            List<Order> orders = new ArrayList<>();
+
+            if (sort[0].contains(",")) {
+                // will sort more than 2 fields
+                // sortOrder="field, direction"
+                for (String sortOrder : sort) {
+                    String[] _sort = sortOrder.split(",");
+                    if (_sort[0].contains(",")) {
+                        orders.add(new Order(getSortDirection(_sort[1]), _sort[0])); // por que o getSortDirection (obtenha a Sort.Direction)? porque o Order espera como parametro um enum Sort.Direction.ASC ou Sort.Direction.DESC nao uma String que veio do RequestParam
+                        // Order construtor espera primeiro a direcao Enum e depois o campo property
+                    }
+                    orders.add(Order.by(_sort[0]));
+                }
+            } else {
+                // o array String[] sort chega 'campo,direcao' mas o construtor do Order espera 'direcao, campo' mas o resultado e o mesmo
+                orders.add(Order.by(sort[0]));; // No construtor da classe Order, o primeiro parametro e a direção da ordenacao (Sort.Direction.ASC ou Sort.Direction.DESC, que sao valores do tipo enum). O segundo parametro e o campo pelo qual voce deseja ordenar (como "id", "nome", etc.).
+            }
+        
+
             List<Tutorial> tutorials = new ArrayList<>();
-            Pageable paging = PageRequest.of(page, size); // Criamos um objeto Pageable para dizer ao Spring como queremos que a paginacao seja feita. Criamos Pageable objetos usando a classe PageRequest que implementa a interface Pageable
+            Pageable pagingSort = PageRequest.of(page, size, Sort.by(orders)); // Criamos um objeto Pageable para dizer ao Spring como queremos que a paginacao seja feita. Criamos Pageable objetos usando a classe PageRequest que implementa a interface Pageable
 
             Page<Tutorial> pageTutorials; // Objeto Page
             if (title == null) {
@@ -67,10 +101,10 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
                 // 1. A lista de Tutoriais na pagina atual.
                 // 2. O numero total de Tutoriais em todas as paginas.
                 // 3. O numero total de paginas.
-                pageTutorials = tutorialRepository.findAll(paging);
+                pageTutorials = tutorialRepository.findAll(pagingSort);
             } else
                 // Mesma coisa que acima, mas aqui estamos buscando Tutoriais com um titulo especifico.
-                pageTutorials = tutorialRepository.findByTitleIgnoreCase(title, paging);
+                pageTutorials = tutorialRepository.findByTitleIgnoreCase(title, pagingSort);
 
             if (pageTutorials.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);

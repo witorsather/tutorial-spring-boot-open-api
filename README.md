@@ -37,21 +37,21 @@ http://localhost:8080/witorsather-documentation
 ## ControllerAdvise e Exception Java
 
 #### Uso no projeto do ControllerAdvise para capturar as Excessões do TutorialController
-![ControllerAdvise](utilidades/diagrama-images/diagrama-exception-java-controller-advise.png)
+![ControllerAdvise](utilidades/diagramas/diagrama-images/diagrama-exception-java-controller-advise.png)
 
 #### Explicação das Excessões em Java (1 Checada 2 Não Checada)
-![Exception-Java](utilidades/diagrama-images/diagrama-java-exception-object-exception.png)
+![Exception-Java](utilidades/diagramas/diagrama-images/diagrama-java-exception-object-exception.png)
 
 #### Insomnia Excessão
 ![Insomnia-Exception-Java](utilidades/insomnia-images/insomnia-getbyid-exception-controlleradvise.png)
 
-## Paginação Spring (Page e Pageable)
+## Paginação e Classificação Spring (Page e Pageable)
 
-#### Uso no projeto do Page e Pageable para fazer paginação dos dados
-![ControllerAdvise](utilidades/diagrama-images/controller-pageable-repository-page.png)
+#### Uso no projeto do Page e Pageable para fazer paginação e classificação dos dados
+![ControllerAdvise](utilidades/diagramas/diagrama-images/controller-pageable-sort-repository-page.png)
 
 #### Insomnia getAllTutorials com parâmetro título e paginação
-![Paginacao](utilidades/insomnia-images/insomnia-page-pageable-paginacao.png)
+![Paginacao](utilidades/insomnia-images/insomnia-page-pageable-sort-paginacao.png)
 
 ## Requisitos
 
