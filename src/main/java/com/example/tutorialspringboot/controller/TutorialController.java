@@ -200,7 +200,7 @@ public class TutorialController { // camada que controla o fluxo ou o meio de ca
     public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {  // spring irá desserializar o corpo JSON(requisição http post enviada pelo cliente) e criar um objeto java Tutorial
         try {
             Tutorial _tutorial = tutorialRepository
-                    .save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), false));
+                    .save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), 5, false, new Date()));
             return new ResponseEntity<>(_tutorial, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

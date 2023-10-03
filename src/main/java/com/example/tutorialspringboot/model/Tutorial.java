@@ -3,7 +3,9 @@
 package com.example.tutorialspringboot.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import jakarta.persistence.*;  // antigo java ee, jakarta ee vem da eclipse foundation com primeira versao 2019 e um conjunto de especificacoes (regras) para ajudar os dev a construirem aplicativos empresariais de forma padronizada
+
+import java.util.Date;
 
 @Entity
 @Table(name = "Tutorial")  // table name e column name são definidos para uma maior clareza e controle, apesar do hibernate automaticamente usar o nome da entidade java para o nome da tabela do banco p
@@ -11,7 +13,7 @@ import jakarta.persistence.*;
 public class Tutorial {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)   // o java confia que o postgresql irá olhar a sequência e gerar automáticamente o próximo valor disponível para o id
+    @GeneratedValue(strategy = GenerationType.AUTO)   // o java confia que o postgresql ira olhar a sequencia e gerar automaticamente o proximo valor disponivel para o id
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Id(identificador) do Tutorial", example = "4")
     private long id;
 
@@ -23,18 +25,29 @@ public class Tutorial {
     @Schema(description = "Descrição do Tutorial", example = "Postgresql")
     private String description;
 
+    @Column(name = "level")
+    @Schema(description = "Level do Tutorial", example = "5")
+    private int level;
+
     @Column(name = "published")
     @Schema(description = "Status do Tutorial (publicado ou não)", example = "true")
     private boolean published;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    @Schema(description = "Data de criação do Tutorial", example = "2023/01/01")
+    private Date createdAt;
 
     public Tutorial() { // construtor sem argumentos que me permite na hora de instanciar a classe, new Tutorial() não precisar passar argumentos, posso passar depois com sets setTitle
         
     }
 
-    public Tutorial(String title, String description, boolean published) {  // construtor com todos os argumentos necessários para criar um Tutorial, não tem o id porque quem cria é o banco de dados de forma incremental, não preciso passar
+    public Tutorial(String title, String description, int level, boolean published, Date createdAt) {  // construtor com todos os argumentos necessários para criar um Tutorial, não tem o id porque quem cria é o banco de dados de forma incremental, não preciso passar
         this.title = title;
         this.description = description;
+        this.level = level;
         this.published = published;
+        this.createdAt = createdAt;
     }
 
     public long getId() {
@@ -67,6 +80,22 @@ public class Tutorial {
 
     public void setPublished(boolean published) {
         this.published = published;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override

@@ -2,15 +2,32 @@
 
 Este projeto consiste em uma API em Spring Boot que realiza operações CRUD (Create, Read, Update, Delete) de tutoriais. Ele fornece endpoints para gerenciar tutoriais, incluindo criação, atualização, exclusão e consulta.
 
-## Endpoints da API
+## Ambiente de Desenvolvimento
 
-A API oferece os seguintes endpoints para gerenciar tutoriais:
+#### Diagrama Java Spring Boot Hibernate JPA
+![ambiente-java](utilidades/diagramas/diagrama-ambiente-java-spring-boot-hibernate-jpa.png)
 
-- `POST /tutorials`: Cria um novo tutorial.
-- `GET /tutorials`: Lista todos os tutoriais.
-- `GET /tutorials/{id}`: Obtém um tutorial por ID.
-- `PUT /tutorials/{id}`: Atualiza um tutorial por ID.
-- `DELETE /tutorials/{id}`: Exclui um tutorial por ID.
+#### Diagrama Spring Boot e Angular
+![ambiente-java-angular](utilidades/diagramas/diagrama-spring-boot-angular.png)
+
+## ControllerAdvise e Exception Java
+
+#### Uso no projeto do ControllerAdvise para capturar as Excessões do TutorialController
+![ControllerAdvise](utilidades/diagramas/diagrama-exception-java-controller-advise.png)
+
+#### Explicação das Excessões em Java (1 Checada 2 Não Checada)
+![Exception-Java](utilidades/diagramas/diagrama-java-exception-object-exception.png)
+
+#### Insomnia Excessão
+![Insomnia-Exception-Java](utilidades/insomnia/insomnia-getbyid-exception-controlleradvise.png)
+
+## Paginação e Classificação Spring (Page e Pageable)
+
+#### Uso no projeto do Page e Pageable para fazer paginação e classificação dos dados
+![ControllerAdvise](utilidades/diagramas/controller-pageable-sort-repository-page.png)
+
+#### Insomnia getAllTutorials com parâmetro título, paginação e classificação
+![Paginacao](utilidades/insomnia/insomnia-page-pageable-sort-paginacao.png)
 
 ## Documentação da API
 
@@ -26,32 +43,23 @@ http://localhost:8080/witorsather-documentation
 ### Swagger OpenAPI
 
 #### Inicialização Swagger (Init)
-![Inicialização](utilidades/swagger-images/swagger-init.png)
+![Inicialização](utilidades/swagger/swagger-init.png)
 
 #### Solicitação de Tutoriais por ID (Get ID Request)
-![Solicitação de Obtenção de ID](utilidades/swagger-images/swagger-get-id-request.png)
+![Solicitação de Obtenção de ID](utilidades/swagger/swagger-get-id-request.png)
 
 #### Resposta da Solicitação de Tutoriais por ID (Get Response)
-![Resposta de Obtenção](utilidades/swagger-images/swagger-get-response.png)
+![Resposta de Obtenção](utilidades/swagger/swagger-get-response.png)
 
-## ControllerAdvise e Exception Java
+## Endpoints da API
 
-#### Uso no projeto do ControllerAdvise para capturar as Excessões do TutorialController
-![ControllerAdvise](utilidades/diagramas/diagrama-images/diagrama-exception-java-controller-advise.png)
+A API oferece os seguintes endpoints para gerenciar tutoriais:
 
-#### Explicação das Excessões em Java (1 Checada 2 Não Checada)
-![Exception-Java](utilidades/diagramas/diagrama-images/diagrama-java-exception-object-exception.png)
-
-#### Insomnia Excessão
-![Insomnia-Exception-Java](utilidades/insomnia-images/insomnia-getbyid-exception-controlleradvise.png)
-
-## Paginação e Classificação Spring (Page e Pageable)
-
-#### Uso no projeto do Page e Pageable para fazer paginação e classificação dos dados
-![ControllerAdvise](utilidades/diagramas/diagrama-images/controller-pageable-sort-repository-page.png)
-
-#### Insomnia getAllTutorials com parâmetro título e paginação
-![Paginacao](utilidades/insomnia-images/insomnia-page-pageable-sort-paginacao.png)
+- `POST /tutorials`: Cria um novo tutorial.
+- `GET /tutorials`: Lista todos os tutoriais.
+- `GET /tutorials/{id}`: Obtém um tutorial por ID.
+- `PUT /tutorials/{id}`: Atualiza um tutorial por ID.
+- `DELETE /tutorials/{id}`: Exclui um tutorial por ID.
 
 ## Requisitos
 
