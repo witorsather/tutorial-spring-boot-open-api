@@ -34,6 +34,12 @@ Este projeto consiste em uma API em Spring Boot que realiza operações CRUD (Cr
 #### Diagrama JUnit
 ![Diagrama JUnit](utilidades/diagramas/diagrama-teste-unitario-java-com-junit5.png)
 
+## Projetos Legado Monólito JAVA
+
+#### Diagrama JSP/JSF
+![Diagrama JSP JSF](utilidades/diagramas/diagrama-monoloito-java-jsp-jsf.png)
+
+
 ## Documentação da API
 
 A documentação da API é gerada automaticamente com o Swagger e pode ser acessada em:
